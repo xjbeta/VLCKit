@@ -1,0 +1,25 @@
+From 60bd5df7368fd7ad043feafa2fa006f17d50137c Mon Sep 17 00:00:00 2001
+From: xjbeta <xjbeta.tiny@gmail.com>
+Date: Sun, 16 Jan 2022 20:55:24 +0800
+Subject: [PATCH] User-agent.
+
+---
+ lib/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/core.c b/lib/core.c
+index 5e8c614c83..3a9f011beb 100644
+--- a/lib/core.c
++++ b/lib/core.c
+@@ -139,7 +139,7 @@ void libvlc_set_user_agent (libvlc_instance_t *p_i,
+ 
+     var_SetString (p_libvlc, "user-agent", name);
+     if ((http != NULL)
+-     && (asprintf (&str, "%s LibVLC/"PACKAGE_VERSION, http) != -1))
++        && (asprintf (&str, "%s", http) != -1))
+     {
+         var_SetString (p_libvlc, "http-user-agent", str);
+         free (str);
+-- 
+2.34.1
+
