@@ -1,0 +1,31 @@
+name: Build VLCKit.xcframework
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+  push:
+    branches:
+      - build
+  pull_request:
+    branches:
+      - build
+
+jobs:
+  release-osx:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build
+        shell: zsh {0}
+        run: |
+          ./buildVLCKit.sh
+
+      - name: Archive framework
+        uses: actions/upload-artifact@v2
+        with:
+          name: framework
+          path: build/VLCKit.xcframework
