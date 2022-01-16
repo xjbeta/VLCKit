@@ -24,8 +24,13 @@ jobs:
         run: |
           ./buildVLCKit.sh
 
-      - name: Archive framework
+      - name: zip framework
+        shell: zsh {0}
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent build/VLCKit.xcframework VLCKitFramework.zip
+
+      - name: framework file
         uses: actions/upload-artifact@v2
         with:
-          name: VLCKit.xcframework
-          path: build/VLCKit.xcframework
+          name: VLCKitFramework.zip
+          path: VLCKitFramework.zip
