@@ -1,5 +1,4 @@
 stages:
-    - nightly
     - release
     - build
 
@@ -48,49 +47,51 @@ continous-VLCKit:
         BUILD_PARAM: "vx"
         JOB_NAME: "VLCKit"
 
-####################
-## Nightly builds ##
-####################
+############################################################
+## Development artifacts builds                           ##
+## These are running every time a merge request is merged ##
+## or a commit gets pushed to the default branch          ##
+############################################################
 
-.nightly-job-base:
+.dev-artifacts-job-base:
     tags:
         - catalina
         - amd64
-    stage: nightly
-    only:
-        - schedules
+    stage: build
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "push" && $CI_PROJECT_PATH == "videolan/VLCKit"'
     artifacts:
         paths:
             - ./*.tar.xz
 
-.nightly-build-base:
+.dev-artifacts-build-base:
     script:
         - ./buildMobileVLCKit.sh -${BUILD_PARAM}
         - ./Packaging/create-distributable-package.sh -${PACKAGING_PARAM}
         - mv ${JOB_NAME}-*.tar.xz ${JOB_NAME}-${VLC_VERSION}-`date +%Y%m%d-%H%M`.tar.xz
 
-nightly-MobileVLCKit:
+dev-artifacts-MobileVLCKit:
     extends:
-        - .nightly-job-base
-        - .nightly-build-base
+        - .dev-artifacts-job-base
+        - .dev-artifacts-build-base
     variables:
         BUILD_PARAM: "vf"
         PACKAGING_PARAM: "vm"
         JOB_NAME: "MobileVLCKit"
 
-nightly-TVVLCKit:
+dev-artifacts-TVVLCKit:
     extends:
-        - .nightly-job-base
-        - .nightly-build-base
+        - .dev-artifacts-job-base
+        - .dev-artifacts-build-base
     variables:
         BUILD_PARAM: "vft"
         PACKAGING_PARAM: "vt"
         JOB_NAME: "TVVLCKit"
 
-nightly-VLCKit:
+dev-artifacts-VLCKit:
     extends:
-        - .nightly-job-base
-        - .nightly-build-base
+        - .dev-artifacts-job-base
+        - .dev-artifacts-build-base
     variables:
         BUILD_PARAM: "vx"
         PACKAGING_PARAM: "v"
@@ -104,11 +105,11 @@ pages:
     tags:
         - docker
         - amd64
-    stage: nightly
+    stage: build
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "push" && $CI_PROJECT_PATH == "videolan/VLCKit"'
     image:
         name: $VLC_DEBIAN_IMAGE
-    only:
-        - schedules
     script:
         - doxygen doxygen.conf
         - mkdir public

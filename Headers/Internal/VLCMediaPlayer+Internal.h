@@ -1,11 +1,10 @@
 /*****************************************************************************
- * VLCKit.h: VLCKit.framework main header
+ * VLCFilter.h: VLCKit.framework VLCFilter header
  *****************************************************************************
- * Copyright (C) 2007 Pierre d'Herbemont
- * Copyright (C) 2007, 2013-2014 VLC authors and VideoLAN
+ * Copyright (C) 2022 VLC authors and VideoLAN
  * $Id$
  *
- * Authors: Pierre d'Herbemont <pdherbemont # videolan.org>
+ * Authors: Maxime Chapelet <umxprime # videolabs.io>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,29 +21,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#import <VLCKit/VLCLibrary.h>
-#import <VLCKit/VLCMedia.h>
-#import <VLCKit/VLCMediaLibrary.h>
-#import <VLCKit/VLCMediaList.h>
-#import <VLCKit/VLCMediaListPlayer.h>
-#import <VLCKit/VLCMediaDiscoverer.h>
-#import <VLCKit/VLCMediaPlayer.h>
-#import <VLCKit/VLCMediaThumbnailer.h>
-#import <VLCKit/VLCStreamSession.h>
-#import <VLCKit/VLCStreamOutput.h>
-#import <VLCKit/VLCTime.h>
-#import <VLCKit/VLCTranscoder.h>
-#import <VLCKit/VLCVideoView.h>
-#import <VLCKit/VLCVideoLayer.h>
-#import <VLCKit/VLCRendererDiscoverer.h>
-#import <VLCKit/VLCRendererItem.h>
-#import <VLCKit/VLCFilter.h>
-#import <VLCKit/VLCAdjustFilter.h>
+#ifndef VLCMediaPlayer_Internal_h
+#define VLCMediaPlayer_Internal_h
 
-@class VLCMedia;
-@class VLCMediaLibrary;
-@class VLCMediaList;
-@class VLCTime;
-@class VLCVideoView;
-@class VLCFilterParameter;
-@class VLCAdjustFilter;
+#import <VLCMediaPlayer.h>
+
+@interface VLCMediaPlayer (Internal)
+@property (readonly) libvlc_media_player_t *playerInstance;
+@end
+
+#endif /* VLCMediaPlayer_Internal_h */

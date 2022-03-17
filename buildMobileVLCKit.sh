@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (C) Pierre d'Herbemont, 2010
-# Copyright (C) Felix Paul Kühne, 2012-2021
+# Copyright (C) Felix Paul Kühne, 2012-2022
 
 set -e
 
@@ -25,7 +25,7 @@ OSVERSIONMINLDFLAG=ios
 ROOT_DIR=empty
 FARCH="all"
 
-TESTEDHASH="584bf4f6" # libvlc hash that this version of VLCKit is build on
+TESTEDHASH="426513d8" # libvlc hash that this version of VLCKit is build on
 
 if [ -z "$MAKE_JOBS" ]; then
     CORE_COUNT=`sysctl -n machdep.cpu.core_count`
@@ -409,10 +409,6 @@ buildLibVLC() {
     fi
     fi
 
-    if [ "$BITCODE" = "yes" ]; then
-    EXTRA_CFLAGS+=" -fembed-bitcode"
-    fi
-
     if [ "$PLATFORM" = "Simulator" ]; then
         # Use the new ABI on simulator, else we can't build
         export OBJCFLAGS="-fobjc-abi-version=2 -fobjc-legacy-dispatch ${OBJCFLAGS}"
@@ -446,6 +442,11 @@ buildLibVLC() {
         if [ "$ARCH" = "aarch64" ]; then
             export GASPP_FIX_XCODE5=1
         fi
+        if [ "$BITCODE" = "yes" ]; then
+            export BUILDWITHBITCODE="yes"
+        fi
+    else
+        export BUILDWITHBITCODE=""
     fi
 
     if [ "$TVOS" = "yes" ]; then
@@ -481,6 +482,10 @@ buildLibVLC() {
     fi
     # The following symbols do not exist on the minimal iOS version (7.0), so they are disabled
     # here. This allows compilation also with newer iOS SDKs
+
+    # Added symbols in macOS 10.10 / iOS 8
+    export ac_cv_func_linkat=no
+    export ac_cv_func_unlinkat=no
 
     # Added symbols in macOS 10.12 / iOS 10 / watchOS 3
     export ac_cv_func_basename_r=no
@@ -566,6 +571,17 @@ buildLibVLC() {
     make -j$MAKE_JOBS > ${out}
 
     spopd # ${VLCROOT}/contrib
+
+    # add this after the contrib step as we are using its native bitcode support
+    if [ "$BITCODE" = "yes" ]; then
+        if [ "$PLATFORM" = "OS" ]; then
+            EXTRA_CFLAGS+=" -fembed-bitcode"
+            export CFLAGS="${EXTRA_CFLAGS}"
+            export CPPFLAGS="${EXTRA_CFLAGS}"
+            export CXXFLAGS="${EXTRA_CFLAGS}"
+            export OBJCFLAGS="${EXTRA_CFLAGS}"
+        fi
+    fi
 
     if ! [ -e ${VLCROOT}/configure ]; then
         info "Bootstraping vlc"
