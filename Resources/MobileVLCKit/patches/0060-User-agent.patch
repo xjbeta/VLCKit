@@ -1,14 +1,13 @@
-From b310e55ce6b25d2e7033b555911e1edfd605e3f4 Mon Sep 17 00:00:00 2001
+From 1c18574e25bac09308beacb01edbe9d018ed39f9 Mon Sep 17 00:00:00 2001
 From: xjbeta <xjbeta.tiny@gmail.com>
-Date: Fri, 18 Mar 2022 11:30:12 +0800
-Subject: [PATCH] User-Agent patch.
+Date: Fri, 18 Mar 2022 14:09:42 +0800
+Subject: [PATCH] UA Patch
 
 ---
- bin/darwinvlc.m | 2 +-
- bin/vlc.c       | 2 +-
- bin/winvlc.c    | 2 +-
- src/libvlc.c    | 5 ++---
- 4 files changed, 5 insertions(+), 6 deletions(-)
+ bin/darwinvlc.m              | 2 +-
+ modules/access/http/tunnel.c | 2 +-
+ src/libvlc.c                 | 5 ++---
+ 3 files changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/bin/darwinvlc.m b/bin/darwinvlc.m
 index 022c559b44..1b322eb305 100644
@@ -23,32 +22,19 @@ index 022c559b44..1b322eb305 100644
  
      libvlc_add_intf(vlc, "hotkeys,none");
  
-diff --git a/bin/vlc.c b/bin/vlc.c
-index 72e0eee428..afeff2007a 100644
---- a/bin/vlc.c
-+++ b/bin/vlc.c
-@@ -235,7 +235,7 @@ int main( int i_argc, const char *ppsz_argv[] )
-     int ret = 1;
-     libvlc_set_exit_handler (vlc, vlc_kill, &self);
-     libvlc_set_app_id (vlc, "org.VideoLAN.VLC", PACKAGE_VERSION, PACKAGE_NAME);
--    libvlc_set_user_agent (vlc, "VLC media player", "VLC/"PACKAGE_VERSION);
-+    libvlc_set_user_agent (vlc, "VLC media player", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15");
+diff --git a/modules/access/http/tunnel.c b/modules/access/http/tunnel.c
+index f311ecff52..193bf2bf4b 100644
+--- a/modules/access/http/tunnel.c
++++ b/modules/access/http/tunnel.c
+@@ -63,7 +63,7 @@ static struct vlc_http_msg *vlc_http_tunnel_open(struct vlc_http_conn *conn,
+         return NULL;
  
-     libvlc_add_intf (vlc, "hotkeys,none");
- #if !defined (__OS2__)
-diff --git a/bin/winvlc.c b/bin/winvlc.c
-index e576547dc4..a9159142b1 100644
---- a/bin/winvlc.c
-+++ b/bin/winvlc.c
-@@ -252,7 +252,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-     {
-         libvlc_set_app_id (vlc, "org.VideoLAN.VLC", PACKAGE_VERSION,
-                            PACKAGE_NAME);
--        libvlc_set_user_agent (vlc, "VLC media player", "VLC/"PACKAGE_VERSION);
-+        libvlc_set_user_agent (vlc, "VLC media player", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15");
-         libvlc_add_intf (vlc, "hotkeys,none");
-         libvlc_add_intf (vlc, "globalhotkeys,none");
-         libvlc_add_intf (vlc, NULL);
+     vlc_http_msg_add_header(req, "ALPN", "h2, http%%2F1.1");
+-    vlc_http_msg_add_agent(req, PACKAGE_NAME "/" PACKAGE_VERSION);
++    vlc_http_msg_add_agent(req, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15");
+     if (username != NULL)
+         vlc_http_msg_add_creds_basic(req, true, username,
+                                      (password != NULL) ? password : "");
 diff --git a/src/libvlc.c b/src/libvlc.c
 index 25f7c7d6d2..b714fc415a 100644
 --- a/src/libvlc.c
