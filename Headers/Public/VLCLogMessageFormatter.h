@@ -1,11 +1,10 @@
 /*****************************************************************************
- * VLCVideoLayer.h: VLCKit.framework VLCVideoLayer header
+ * VLCLogMessageFormatter.h: [Mobile/TV]VLCKit.framework VLCLogMessageFormatter header
  *****************************************************************************
- * Copyright (C) 2007 Pierre d'Herbemont
- * Copyright (C) 2007 VLC authors and VideoLAN
+ * Copyright (C) 2022 VLC authors and VideoLAN
  * $Id$
  *
- * Authors: Pierre d'Herbemont <pdherbemont # videolan.org>
+ * Authors: Maxime Chapelet <umxprime # videolabs.io>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,25 +21,18 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#import <QuartzCore/QuartzCore.h>
+#import <Foundation/Foundation.h>
+
+#import "VLCLogging.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * a custom layer for rendering video in a CoreAnimation environment
+ * \brief A simple log message formatter
+ * \discussion This formatter will format a message like "[level] message context"
+ * \warning Any customContext object not responding to the `description` message will be ignored
  */
-@interface VLCVideoLayer : CALayer
-
-/**
- * Is a video being rendered in this layer?
- * \return the BOOL value
- */
-@property (nonatomic, readonly) BOOL hasVideo;
-/**
- * Should the video fill the screen by adding letterboxing or stretching?
- * \return the BOOL value
- */
-@property (nonatomic) BOOL fillScreen;
+@interface VLCLogMessageFormatter : NSObject<VLCLogMessageFormatting>
 
 @end
 

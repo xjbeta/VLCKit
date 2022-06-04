@@ -24,10 +24,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#import "VLCMediaDiscoverer.h"
-#import "VLCLibrary.h"
-#import "VLCLibVLCBridging.h"
-#import "VLCEventManager.h"
+#import <VLCMediaDiscoverer.h>
+#import <VLCLibrary.h>
+#import <VLCLibVLCBridging.h>
 
 #include <vlc/vlc.h>
 #include <vlc/libvlc.h>
@@ -113,8 +112,6 @@ NSString *const VLCMediaDiscovererCategory = @"VLCMediaDiscovererCategory";
 
 - (void)dealloc
 {
-    [[VLCEventManager sharedManager] cancelCallToObject:self];
-
     _discoveredMedia = nil;
 
     if (_mdis) {
@@ -152,7 +149,7 @@ NSString *const VLCMediaDiscovererCategory = @"VLCMediaDiscovererCategory";
     libvlc_media_discoverer_stop(_mdis);
 }
 
-- (VLCMediaList *)discoveredMedia
+- (nullable VLCMediaList *)discoveredMedia
 {
     return _discoveredMedia;
 }
@@ -175,7 +172,7 @@ NSString *const VLCMediaDiscovererCategory = @"VLCMediaDiscovererCategory";
 
 - (BOOL)isRunning
 {
-    return libvlc_media_discoverer_is_running(_mdis);;
+    return libvlc_media_discoverer_is_running(_mdis);
 }
 
 @end

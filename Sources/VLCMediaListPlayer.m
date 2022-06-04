@@ -25,13 +25,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#import "VLCMediaListPlayer.h"
-#import "VLCMedia.h"
-#import "VLCMediaPlayer.h"
-#import "VLCMediaList.h"
-#import "VLCLibVLCBridging.h"
-#import "VLCLibrary.h"
-#import "VLCEventManager.h"
+#import <VLCMediaListPlayer.h>
+#import <VLCMedia.h>
+#import <VLCMediaPlayer.h>
+#import <VLCMediaList.h>
+#import <VLCLibVLCBridging.h>
+#import <VLCLibrary.h>
 
 @interface VLCMediaListPlayer () {
     void *instance;
@@ -49,9 +48,10 @@
 static void HandleMediaListPlayerPlayed(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(mediaListPlayerPlayed)
-                                           withArgumentAsObject:nil];
+        VLCMediaListPlayer *mediaListPlayer = (__bridge VLCMediaListPlayer *)self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [mediaListPlayer mediaListPlayerPlayed];
+        });
     }
 }
 
@@ -60,19 +60,20 @@ static void HandleMediaListPlayerNextItemSet(const libvlc_event_t * event, void 
     @autoreleasepool {
         VLCMedia *media = [[VLCMedia alloc]
                            initWithLibVLCMediaDescriptor:event->u.media_list_player_next_item_set.item];
-
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(mediaListPlayerNextItemSet:)
-                                           withArgumentAsObject:media];
+        VLCMediaListPlayer *mediaListPlayer = (__bridge VLCMediaListPlayer *)self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [mediaListPlayer mediaListPlayerNextItemSet: media];
+        });
     }
 }
 
 static void HandleMediaListPlayerStopped(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(mediaListPlayerStopped)
-                                           withArgumentAsObject:nil];
+        VLCMediaListPlayer *mediaListPlayer = (__bridge VLCMediaListPlayer *)self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [mediaListPlayer mediaListPlayerStopped];
+        });
     }
 }
 
@@ -161,7 +162,7 @@ static void HandleMediaListPlayerStopped(const libvlc_event_t * event, void * se
     return _mediaPlayer;
 }
 
-- (void)setMediaList:(VLCMediaList *)mediaList
+- (void)setMediaList:(nullable VLCMediaList *)mediaList
 {
     if (_mediaList == mediaList)
         return;
@@ -173,7 +174,7 @@ static void HandleMediaListPlayerStopped(const libvlc_event_t * event, void * se
     [self didChangeValueForKey:@"rootMedia"];
 }
 
-- (VLCMediaList *)mediaList
+- (nullable VLCMediaList *)mediaList
 {
     return _mediaList;
 }
@@ -196,7 +197,7 @@ static void HandleMediaListPlayerStopped(const libvlc_event_t * event, void * se
 
 }
 
-- (VLCMedia *)rootMedia
+- (nullable VLCMedia *)rootMedia
 {
     return _rootMedia;
 }

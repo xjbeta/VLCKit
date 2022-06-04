@@ -1,11 +1,10 @@
 /*****************************************************************************
- * VLCVideoLayer.h: VLCKit.framework VLCVideoLayer header
+ * VLCConsoleLogger.h: [Mobile/TV]VLCKit.framework VLCConsoleLogger header
  *****************************************************************************
- * Copyright (C) 2007 Pierre d'Herbemont
- * Copyright (C) 2007 VLC authors and VideoLAN
+ * Copyright (C) 2022 VLC authors and VideoLAN
  * $Id$
  *
- * Authors: Pierre d'Herbemont <pdherbemont # videolan.org>
+ * Authors: Maxime Chapelet <umxprime # videolabs.io>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,25 +21,25 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#import <QuartzCore/QuartzCore.h>
+#import <Foundation/Foundation.h>
+
+#import "VLCLogging.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * a custom layer for rendering video in a CoreAnimation environment
+ * \brief A simple console logger to be used with a library instance
+ * \see -[VLCLibrary loggers]
  */
-@interface VLCVideoLayer : CALayer
+@interface VLCConsoleLogger : NSObject<VLCFormattedMessageLogging>
 
 /**
- * Is a video being rendered in this layer?
- * \return the BOOL value
+ * \brief Used to format handled log infos
+ * \note Set to an instance of `VLCLogMessageFormatter` by default
+ * \warning Won't accept nil value
+ * \see VLCLogMessageFormatting
  */
-@property (nonatomic, readonly) BOOL hasVideo;
-/**
- * Should the video fill the screen by adding letterboxing or stretching?
- * \return the BOOL value
- */
-@property (nonatomic) BOOL fillScreen;
+@property (nonatomic, readwrite) id<VLCLogMessageFormatting> formatter;
 
 @end
 

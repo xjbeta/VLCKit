@@ -22,9 +22,9 @@
 
 #import <vlc/vlc.h>
 
-#import "VLCMediaThumbnailer.h"
-#import "VLCLibVLCBridging.h"
-
+#import <VLCMediaThumbnailer.h>
+#import <VLCLibVLCBridging.h>
+#import <VLCTime.h>
 
 @interface VLCMediaThumbnailer ()
 {
@@ -106,7 +106,7 @@ static void display(void *opaque, void *picture)
     return obj;
 }
 
-+ (VLCMediaThumbnailer *)thumbnailerWithMedia:(VLCMedia *)media delegate:(id<VLCMediaThumbnailerDelegate>)delegate andVLCLibrary:(VLCLibrary *)library
++ (VLCMediaThumbnailer *)thumbnailerWithMedia:(VLCMedia *)media delegate:(id<VLCMediaThumbnailerDelegate>)delegate andVLCLibrary:(nullable VLCLibrary *)library
 {
     id obj = [[[self class] alloc] init];
     [obj setMedia:media];

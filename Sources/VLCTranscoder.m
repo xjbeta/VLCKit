@@ -21,11 +21,10 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
-#import "VLCTranscoder.h"
+#import <VLCTranscoder.h>
 
-#import "VLCEventManager.h"
-#import "VLCLibrary.h"
-#import "VLCLibVLCBridging.h"
+#import <VLCLibrary.h>
+#import <VLCLibVLCBridging.h>
 
 #include <vlc/vlc.h>
 
@@ -130,9 +129,10 @@ static void HandleMuxMediaInstanceStateChanged(const libvlc_event_t * event, voi
         newState = VLCMediaPlayerStateError;
     }
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(mediaPlayerStateChangeForMux:)
-                                           withArgumentAsObject:@(newState)];
+        VLCTranscoder *transcoder = (__bridge VLCTranscoder *)self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [transcoder mediaPlayerStateChangeForMux: @(newState)];
+        });
     }
 }
 

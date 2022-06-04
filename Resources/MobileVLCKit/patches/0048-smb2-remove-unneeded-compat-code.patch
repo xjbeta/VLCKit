@@ -1,18 +1,19 @@
-From 01e8127d2a8af0559ff012c75c1f7bcd722178ca Mon Sep 17 00:00:00 2001
+From 61e57b19346bde55925bcc91ace2b09a362bcb1d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Felix=20Paul=20K=C3=BChne?= <felix@feepk.net>
-Date: Tue, 18 May 2021 13:18:37 +0200
-Subject: [PATCH 39/56] Revert "smb2: fix build with libsmb2 3.0.0"
+Date: Sat, 16 Apr 2022 00:44:03 +0200
+Subject: [PATCH 48/52] smb2: remove unneeded compat code
 
-This reverts commit 6f160ae1784364aa9324f9cfcb7fbda592cc3dd9.
+thread_local is unavailable to 32bit on iOS and the code in question is
+not needed as we have the latest libsmb2, so let's remove it.
 ---
  modules/access/smb2.c | 28 ----------------------------
  1 file changed, 28 deletions(-)
 
 diff --git a/modules/access/smb2.c b/modules/access/smb2.c
-index 7536522e04..1183ef448b 100644
+index 7373e5904a..66df992cfb 100644
 --- a/modules/access/smb2.c
 +++ b/modules/access/smb2.c
-@@ -133,34 +133,6 @@ smb2_set_error(stream_t *access, const char *psz_func, int err)
+@@ -190,34 +190,6 @@ smb2_set_error(struct vlc_smb2_op *op, const char *psz_func, int err)
  
  #define VLC_SMB2_STATUS_DENIED(x) (x == -ECONNREFUSED || x == -EACCES)
  
@@ -45,7 +46,7 @@ index 7536522e04..1183ef448b 100644
 -#endif
 -
  static int
- vlc_smb2_mainloop(stream_t *access, bool teardown)
+ vlc_smb2_mainloop(struct vlc_smb2_op *op)
  {
 -- 
 2.32.0 (Apple Git-132)

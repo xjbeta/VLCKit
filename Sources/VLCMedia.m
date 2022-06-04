@@ -25,11 +25,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#import "VLCMedia.h"
-#import "VLCMediaList.h"
-#import "VLCEventManager.h"
-#import "VLCLibrary.h"
-#import "VLCLibVLCBridging.h"
+#import <VLCMedia.h>
+#import <VLCMediaList.h>
+#import <VLCLibrary.h>
+#import <VLCLibVLCBridging.h>
+#import <VLCTime.h>
 #import <vlc/libvlc.h>
 #import <sys/sysctl.h> // for sysctlbyname
 
@@ -107,7 +107,7 @@ int seek_cb(void *opaque, uint64_t offset) {
 }
 
 void close_cb(void *opaque) {
-    NSInputStream *stream = (__bridge NSInputStream *)(opaque);
+    NSInputStream *stream = (__bridge_transfer NSInputStream *)(opaque);
     if (stream && stream.streamStatus != NSStreamStatusClosed && stream.streamStatus != NSStreamStatusNotOpen) {
         [stream close];
     }
@@ -130,7 +130,7 @@ void close_cb(void *opaque) {
 
 /* Make our properties internally readwrite */
 @property (nonatomic, readwrite) VLCMediaState state;
-@property (nonatomic, readwrite, strong) VLCMediaList * subitems;
+@property (nonatomic, readwrite, strong, nullable) VLCMediaList * subitems;
 
 /* Statics */
 + (libvlc_meta_t)stringToMetaType:(NSString *)string;
@@ -149,10 +149,9 @@ void close_cb(void *opaque) {
 - (void)parseIfNeeded;
 
 /* Callback Methods */
-- (void)parsedChanged:(NSNumber *)isParsedAsNumber;
+- (void)parsedChanged;
 - (void)metaChanged:(NSString *)metaType;
 - (void)subItemAdded;
-- (void)setStateAsNumber:(NSNumber *)newStateAsNumber;
 
 @end
 
@@ -179,46 +178,53 @@ static inline VLCMediaState LibVLCStateToMediaState( libvlc_state_t state )
 static void HandleMediaMetaChanged(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(metaChanged:)
-                                           withArgumentAsObject:[VLCMedia metaTypeToString:event->u.media_meta_changed.meta_type]];
+        VLCMedia *media = (__bridge VLCMedia *)self;
+        NSString *metaType = [VLCMedia metaTypeToString:event->u.media_meta_changed.meta_type];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [media metaChanged: metaType];
+        });
     }
 }
 
 static void HandleMediaDurationChanged(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(setLength:)
-                                           withArgumentAsObject:[VLCTime timeWithNumber:
-                                               @(event->u.media_duration_changed.new_duration)]];
+        VLCMedia *media = (__bridge VLCMedia *)self;
+        VLCTime *time = [VLCTime timeWithNumber: @(event->u.media_duration_changed.new_duration)];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [media setLength: time];
+        });
     }
 }
 
 static void HandleMediaStateChanged(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(setStateAsNumber:)
-                                           withArgumentAsObject:@(LibVLCStateToMediaState(event->u.media_state_changed.new_state))];
+        VLCMedia *media = (__bridge VLCMedia *)self;
+        VLCMediaState state = LibVLCStateToMediaState(event->u.media_state_changed.new_state);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [media setState: state];
+        });
     }
 }
 
 static void HandleMediaSubItemAdded(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(subItemAdded)
-                                           withArgumentAsObject:nil];
+        VLCMedia *media = (__bridge VLCMedia *)self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [media subItemAdded];
+        });
     }
 }
 
 static void HandleMediaParsedChanged(const libvlc_event_t * event, void * self)
 {
     @autoreleasepool {
-        [[VLCEventManager sharedManager] callOnMainThreadObject:(__bridge id)(self)
-                                                     withMethod:@selector(parsedChanged:)
-                                           withArgumentAsObject:@((BOOL)event->u.media_parsed_changed.new_status)];
+        VLCMedia *media = (__bridge VLCMedia *)self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [media parsedChanged];
+        });
     }
 }
 
@@ -292,7 +298,7 @@ static void HandleMediaParsedChanged(const libvlc_event_t * event, void * self)
         NSAssert(stream.streamStatus != NSStreamStatusClosed, @"Passing closed stream to VLCMedia.init does not work");
         
         self->stream = stream;
-        p_md = libvlc_media_new_callbacks(library.instance, open_cb, read_cb, seek_cb, close_cb, (__bridge void *)(stream));
+        p_md = libvlc_media_new_callbacks(library.instance, open_cb, read_cb, seek_cb, close_cb, (__bridge_retained void *)(stream));
         
         _metaDictionary = [[NSMutableDictionary alloc] initWithCapacity:3];
         
@@ -327,8 +333,6 @@ static void HandleMediaParsedChanged(const libvlc_event_t * event, void * self)
         }
     }
 
-    [[VLCEventManager sharedManager] cancelCallToObject:self];
-
     if (p_md)
         libvlc_media_release(p_md);
 }
@@ -359,7 +363,7 @@ static void HandleMediaParsedChanged(const libvlc_event_t * event, void * self)
     return [NSString stringWithFormat:@"<%@ %p>, md: %p, url: %@", [self class], self, p_md, [[_url absoluteString] stringByRemovingPercentEncoding]];
 }
 
-- (NSComparisonResult)compare:(VLCMedia *)media
+- (NSComparisonResult)compare:(nullable VLCMedia *)media
 {
     if (self == media)
         return NSOrderedSame;
@@ -485,9 +489,9 @@ static void HandleMediaParsedChanged(const libvlc_event_t * event, void * self)
     }
 }
 
-- (int)storeCookie:(NSString * _Nonnull)cookie
-           forHost:(NSString *_Nonnull)host
-              path:(NSString *_Nonnull)path
+- (int)storeCookie:(NSString *)cookie
+           forHost:(NSString *)host
+              path:(NSString *)path
 {
     if (!p_md || cookie == NULL || host == NULL || path == NULL) {
         return -1;
@@ -513,7 +517,7 @@ static void HandleMediaParsedChanged(const libvlc_event_t * event, void * self)
 #endif
 }
 
-- (NSDictionary *)stats
+- (nullable NSDictionary *)stats
 {
     if (!p_md)
         return nil;
@@ -852,7 +856,7 @@ NSString *const VLCMediaTracksInformationTextEncoding = @"encoding"; // NSString
     return YES;
 }
 
-- (NSString *)metadataForKey:(NSString *)key
+- (nullable NSString *)metadataForKey:(NSString *)key
 {
     if (!p_md)
         return nil;
@@ -960,6 +964,8 @@ NSString *const VLCMediaTracksInformationTextEncoding = @"encoding"; // NSString
 
 - (void)initInternalMediaDescriptor
 {
+    self.state = VLCMediaStateNothingSpecial;
+
     char * p_url = libvlc_media_get_mrl( p_md );
     if (!p_url)
         return;
@@ -1080,7 +1086,7 @@ NSString *const VLCMediaTracksInformationTextEncoding = @"encoding"; // NSString
     libvlc_media_list_release( p_mlist );
 }
 
-- (void)parsedChanged:(NSNumber *)isParsedAsNumber
+- (void)parsedChanged
 {
     [self willChangeValueForKey:@"parsedStatus"];
     [self parsedStatus];
@@ -1091,11 +1097,6 @@ NSString *const VLCMediaTracksInformationTextEncoding = @"encoding"; // NSString
 
     if ([_delegate respondsToSelector:@selector(mediaDidFinishParsing:)])
         [_delegate mediaDidFinishParsing:self];
-}
-
-- (void)setStateAsNumber:(NSNumber *)newStateAsNumber
-{
-    [self setState: [newStateAsNumber intValue]];
 }
 
 #if TARGET_OS_IPHONE
