@@ -23,21 +23,6 @@ variables:
     script:
         - ./buildMobileVLCKit.sh -${BUILD_PARAM}
 
-continous-MobileVLCKit:
-    extends:
-        - .continous-job-base
-        - .continous-build-base
-    variables:
-        BUILD_PARAM: "vf3"
-        JOB_NAME: "MobileVLCKit"
-
-continous-TVVLCKit:
-    extends:
-        - .continous-job-base
-        - .continous-build-base
-    variables:
-        BUILD_PARAM: "vft"
-        JOB_NAME: "TVVLCKit"
 
 continous-VLCKit:
     extends:
@@ -72,23 +57,6 @@ continous-VLCKit:
         - ./Packaging/create-distributable-package.sh -${PACKAGING_PARAM}
         - mv ${JOB_NAME}-*.tar.xz ${JOB_NAME}-${VLC_VERSION}-`date +%Y%m%d-%H%M`.tar.xz
 
-dev-artifacts-MobileVLCKit:
-    extends:
-        - .dev-artifacts-job-base
-        - .dev-artifacts-build-base
-    variables:
-        BUILD_PARAM: "vf3"
-        PACKAGING_PARAM: "vm"
-        JOB_NAME: "MobileVLCKit"
-
-dev-artifacts-TVVLCKit:
-    extends:
-        - .dev-artifacts-job-base
-        - .dev-artifacts-build-base
-    variables:
-        BUILD_PARAM: "vft"
-        PACKAGING_PARAM: "vt"
-        JOB_NAME: "TVVLCKit"
 
 dev-artifacts-VLCKit:
     extends:
@@ -139,19 +107,6 @@ pages:
         - cd Packaging
         - ./buildAndDeployFrameworks.sh -${BUILD_PARAM}
 
-MobileVLCKit:
-    extends:
-        - .release-job-base
-        - .release-build-base
-    variables:
-        BUILD_PARAM: "m"
-
-TVVLCKit:
-    extends:
-        - .release-job-base
-        - .release-build-base
-    variables:
-        BUILD_PARAM: "t"
 
 VLCKit:
     extends:
