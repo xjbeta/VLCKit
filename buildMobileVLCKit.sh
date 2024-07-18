@@ -542,16 +542,16 @@ buildLibVLC() {
         --disable-sdl \
         --disable-SDL_image \
         --disable-iconv \
-        --enable-zvbi \
+        --disable-zvbi \
         --disable-kate \
         --disable-caca \
         --disable-gettext \
         --disable-mpcdec \
-        --enable-upnp \
+        --disable-upnp \
         --disable-gme \
         --disable-srt \
         --disable-tremor \
-        --enable-vorbis \
+        --disable-vorbis \
         --disable-sidplay2 \
         --disable-samplerate \
         --disable-goom \
@@ -573,9 +573,9 @@ buildLibVLC() {
         --disable-luac \
         --disable-aribb24 \
         --disable-aribb25 \
-        --enable-vpx \
-        --enable-libdsm \
-        --enable-smb2 \
+        --disable-vpx \
+        --disable-libdsm \
+        --disable-smb2 \
         --enable-libplacebo \
         --disable-sparkle \
         --disable-growl \
@@ -671,8 +671,8 @@ buildLibVLC() {
         --disable-nls \
         --disable-sse \
         --disable-notify \
-        --enable-live555 \
-        --enable-realrtsp \
+        --disable-live555 \
+        --disable-realrtsp \
         --enable-swscale \
         --disable-projectm \
         --enable-libass \
@@ -685,19 +685,19 @@ buildLibVLC() {
         --disable-libva \
         --disable-gme \
         --disable-tremor \
-        --enable-vorbis \
+        --disable-vorbis \
         --disable-fluidsynth \
         --disable-jack \
         --disable-pulse \
         --disable-mtp \
-        --enable-ogg \
-        --enable-speex \
-        --enable-theora \
-        --enable-flac \
+        --disable-ogg \
+        --disable-speex \
+        --disable-theora \
+        --disable-flac \
         --disable-screen \
         --enable-freetype \
-        --enable-taglib \
-        --enable-smb2 \
+        --disable-taglib \
+        --disable-smb2 \
         --disable-mmx \
         --disable-sparkle \
         --disable-addonmanagermodules \
