@@ -41,7 +41,7 @@ OBJC_VISIBLE
  * Property to mute the current audio output
  * \note decoding continues when muted, so consider disabling the audio track if you don't want audio for a long time
  */
-@property (getter=isMuted) BOOL muted;
+@property (nonatomic, assign, getter=isMuted, setter=setMuted:) BOOL muted;
 
 /**
  * control the current audio output volume */
