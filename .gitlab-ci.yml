@@ -14,8 +14,10 @@ variables:
     tags:
         - macos-xcode15
     stage: build
-    only:
-        - merge_requests
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "build-4.0"'
+          when: manual
+        - when: never
     interruptible: true
 
 .continous-build-base-main:
@@ -26,21 +28,6 @@ variables:
         - rm -rf libvlc/vlc || true
         - rm -rf *-binary || true
 
-continous-VLCKit-iOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vf"
-        JOB_NAME: "MobileVLCKit"
-
-continous-VLCKit-tvOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vft"
-        JOB_NAME: "TVVLCKit"
 
 continous-VLCKit-macOS-main:
     extends:
@@ -50,21 +37,6 @@ continous-VLCKit-macOS-main:
         BUILD_PARAM: "vx"
         JOB_NAME: "VLCKit"
 
-continous-VLCKit-xrOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vfi"
-        JOB_NAME: "VLCKit-watchOS"
-
-continous-VLCKit-watchOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vfw"
-        JOB_NAME: "VLCKit-watchOS"
 
 ############################################################
 ## Development artifacts builds                           ##
@@ -76,9 +48,9 @@ continous-VLCKit-watchOS-main:
     tags:
         - macos-xcode15
     rules:
-        - if: '$CI_PIPELINE_SOURCE == "push" && $CI_PROJECT_PATH == "videolan/VLCKit"'
-        - if: '$CI_COMMIT_TAG'
-          when: never
+        - if: '$CI_COMMIT_BRANCH == "build-4.0"'
+          when: manual
+        - when: never
 
     artifacts:
         paths:
@@ -95,23 +67,6 @@ continous-VLCKit-watchOS-main:
         - rm -rf libvlc/vlc || true
         - rm -rf *-binary || true
 
-dev-artifacts-VLCKit-iOS-main:
-    extends:
-        - .dev-artifacts-job-base-main
-        - .dev-artifacts-build-base-main
-    variables:
-        BUILD_PARAM: "f"
-        PACKAGING_PARAM: "m"
-        JOB_NAME: "VLCKit-iOS"
-
-dev-artifacts-VLCKit-tvOS-main:
-    extends:
-        - .dev-artifacts-job-base-main
-        - .dev-artifacts-build-base-main
-    variables:
-        BUILD_PARAM: "ft"
-        PACKAGING_PARAM: "t"
-        JOB_NAME: "VLCKit-tvOS"
 
 dev-artifacts-VLCKit-macOS-main:
     extends:
@@ -122,23 +77,6 @@ dev-artifacts-VLCKit-macOS-main:
         PACKAGING_PARAM: "x"
         JOB_NAME: "VLCKit-macOS"
 
-dev-artifacts-VLCKit-xrOS-main:
-    extends:
-        - .dev-artifacts-job-base-main
-        - .dev-artifacts-build-base-main
-    variables:
-        BUILD_PARAM: "fi"
-        PACKAGING_PARAM: "i"
-        JOB_NAME: "VLCKit-xrOS"
-
-dev-artifacts-VLCKit-watchOS-main:
-    extends:
-        - .dev-artifacts-job-base-main
-        - .dev-artifacts-build-base-main
-    variables:
-        BUILD_PARAM: "fw"
-        PACKAGING_PARAM: "w"
-        JOB_NAME: "VLCKit-watchOS"
 
 ####################
 ## Release builds ##
@@ -163,19 +101,6 @@ dev-artifacts-VLCKit-watchOS-main:
         - rm -rf libvlc/vlc || true
         - rm -rf *-binary || true
 
-MobileVLCKit-main:
-    extends:
-        - .release-job-base-main
-        - .release-build-base-main
-    variables:
-        BUILD_PARAM: "m"
-
-TVVLCKit-main:
-    extends:
-        - .release-job-base-main
-        - .release-build-base-main
-    variables:
-        BUILD_PARAM: "t"
 
 VLCKit-main:
     extends:
