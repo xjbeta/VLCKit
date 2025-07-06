@@ -538,8 +538,11 @@ static const struct event_handler_entry {
 {
     [self.metaData handleMediaMetaChanged: metaType];
 
-    if ([_delegate respondsToSelector:@selector(mediaMetaDataDidChange:)])
-        [_delegate mediaMetaDataDidChange:self];
+    if ([_delegate respondsToSelector:@selector(mediaMetaDataDidChange:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaMetaDataDidChange:self];
+        });
+    }
 }
 
 - (void)subItemAdded
@@ -562,8 +565,11 @@ static const struct event_handler_entry {
     [self parsedStatus];
     [self didChangeValueForKey:@"parsedStatus"];
     
-    if ([_delegate respondsToSelector:@selector(mediaDidFinishParsing:)])
-        [_delegate mediaDidFinishParsing:self];
+    if ([_delegate respondsToSelector:@selector(mediaDidFinishParsing:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaDidFinishParsing:self];
+        });
+    }
 }
 
 @end

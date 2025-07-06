@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Renderer Discoverer delegate protocol
  * Allows to be notified upon discovery/changes of an renderer item
  */
+NS_SWIFT_UI_ACTOR
 @protocol VLCRendererDiscovererDelegate <NSObject>
 
 - (void)rendererDiscovererItemAdded:(VLCRendererDiscoverer *)rendererDiscoverer

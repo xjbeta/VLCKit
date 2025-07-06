@@ -42,6 +42,7 @@ FOUNDATION_EXPORT NSNotificationName const VLCMediaListItemDeletedNotification N
 /**
  * VLCMediaListDelegate
  */
+NS_SWIFT_UI_ACTOR
 @protocol VLCMediaListDelegate <NSObject>
 @optional
 /**

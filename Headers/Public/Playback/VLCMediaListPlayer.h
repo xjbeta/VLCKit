@@ -40,6 +40,7 @@ typedef NS_ENUM(NSInteger, VLCRepeatMode) {
     VLCRepeatAllItems
 };
 
+NS_SWIFT_UI_ACTOR
 @protocol VLCMediaListPlayerDelegate <NSObject>
 @optional
 /**

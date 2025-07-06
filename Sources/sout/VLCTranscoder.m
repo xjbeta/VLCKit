@@ -112,7 +112,9 @@
         [self unregisterObserversForMuxWithPlayer:_p_mp];
         libvlc_media_player_stop_async( _p_mp );
         if ([self.delegate respondsToSelector:@selector(transcode:finishedSucessfully:)]) {
-            [self.delegate transcode:self finishedSucessfully: newState != VLCMediaPlayerStateError];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.delegate transcode:self finishedSucessfully: newState != VLCMediaPlayerStateError];
+            });
         }
     }
 }

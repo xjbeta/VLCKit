@@ -74,8 +74,11 @@ static void HandleMediaListItemAdded(const libvlc_event_t * event, void * opaque
             
             [mediaList didChange: NSKeyValueChangeInsertion valuesAtIndexes: indexSet forKey: @"media"];
             
-            if ([mediaList.delegate respondsToSelector: @selector(mediaList:mediaAdded:atIndex:)])
-                [mediaList.delegate mediaList: mediaList mediaAdded: foundMedia atIndex: index];
+            if ([mediaList.delegate respondsToSelector: @selector(mediaList:mediaAdded:atIndex:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaList.delegate mediaList: mediaList mediaAdded: foundMedia atIndex: index];
+                });
+            }
             
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaListItemAddedNotification
                                                                          object: mediaList
@@ -107,8 +110,11 @@ static void HandleMediaListItemDeleted( const libvlc_event_t * event, void * opa
             
             [mediaList didChange: NSKeyValueChangeRemoval valuesAtIndexes: indexSet forKey: @"media"];
             
-            if ([mediaList.delegate respondsToSelector:@selector(mediaList:mediaRemovedAtIndex:)])
-                [mediaList.delegate mediaList: mediaList mediaRemovedAtIndex: index];
+            if ([mediaList.delegate respondsToSelector:@selector(mediaList:mediaRemovedAtIndex:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaList.delegate mediaList: mediaList mediaRemovedAtIndex: index];
+                });
+            }
             
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaListItemDeletedNotification
                                                                          object: mediaList
