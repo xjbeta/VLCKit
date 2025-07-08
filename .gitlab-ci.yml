@@ -12,7 +12,7 @@ variables:
 
 .continous-job-base-main:
     tags:
-        - macos-xcode15
+        - macos-m1
     stage: build
     rules:
         - if: '$CI_COMMIT_BRANCH == "build-4.0"'
@@ -46,7 +46,7 @@ continous-VLCKit-macOS-main:
 
 .dev-artifacts-job-base-main:
     tags:
-        - macos-xcode15
+        - macos-m1
     rules:
         - if: '$CI_COMMIT_BRANCH == "build-4.0"'
           when: manual
@@ -84,7 +84,7 @@ dev-artifacts-VLCKit-macOS-main:
 
 .release-job-base-main:
     tags:
-        - macos-xcode15
+        - macos-m1
     stage: release
     only:
         - tags
