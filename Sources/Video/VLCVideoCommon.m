@@ -60,8 +60,14 @@
 
             videoRect.size.width = ratio * original.width;
             videoRect.size.height = ratio * original.height;
-            videoRect.origin.x += (CGRectGetWidth(bounds) - CGRectGetWidth(videoRect)) / 2.0;
-            videoRect.origin.y += (CGRectGetHeight(bounds) - CGRectGetHeight(videoRect)) / 2.0;
+            
+            // Calculate centering offsets
+            CGFloat xOffset = (CGRectGetWidth(bounds) - CGRectGetWidth(videoRect)) / 2.0;
+            CGFloat yOffset = (CGRectGetHeight(bounds) - CGRectGetHeight(videoRect)) / 2.0;
+            
+            // Set absolute coordinates to avoid coordinate accumulation errors
+            videoRect.origin.x = bounds.origin.x + xOffset;
+            videoRect.origin.y = bounds.origin.y + yOffset;
         }
         videolayer.frame = videoRect;
     }
