@@ -1,0 +1,42 @@
+name: Build VLCKit.xcframework
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+  push:
+    branches:
+      - build-4.0
+  pull_request:
+    branches:
+      - build-4.0
+
+jobs:
+  release-osx:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache libvlc build
+        uses: actions/cache@v4
+        with:
+          path: |
+            libvlc/vlc
+            build
+          key: ${{ runner.os }}-libvlc-vlc
+          restore-keys: |
+            ${{ runner.os }}-libvlc-vlc-
+
+      - name: Build
+        shell: zsh {0}
+        run: |
+          ./compileAndBuildVLCKit.sh -x
+          ./Packaging/create-distributable-package.sh -x -z
+          mv *.zip ${JOB_NAME}-${VLC_VERSION}-`date +%Y%m%d-%H%M`.zip
+
+      - name: framework file
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${JOB_NAME}-${VLC_VERSION}.zip"
+          path: "${JOB_NAME}-${VLC_VERSION}-*.zip"
