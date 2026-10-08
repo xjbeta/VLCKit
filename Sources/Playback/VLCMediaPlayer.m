@@ -241,8 +241,11 @@ static void HandleMediaInstanceStateChanged(void *opaque, libvlc_state_t state)
             [mediaPlayer mediaPlayerStateChanged: newState];
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerStateChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerStateChanged:)])
-                [mediaPlayer.delegate mediaPlayerStateChanged:newState];
+            if([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerStateChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerStateChanged:newState];
+                });
+            }
             if (newState == VLCMediaPlayerStateStopped)
                 [mediaPlayer.mediaListPlayer mediaListPlayerStopped];
         }];
@@ -255,8 +258,11 @@ static void HandleMediaPlayerBuffering(void *opaque, float buffering)
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
         [eventsHandler handleEvent:^(id _Nonnull object) {
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerBufferingChanged:)])
-                [mediaPlayer.delegate mediaPlayerBufferingChanged:buffering];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerBufferingChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerBufferingChanged:buffering];
+                });
+            }
         }];
     }
 }
@@ -269,8 +275,11 @@ static void HandleMediaPlayerRateChanged(void *opaque, float rate)
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerRateChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerRateChanged:)])
-                [mediaPlayer.delegate mediaPlayerRateChanged:rate];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerRateChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerRateChanged:rate];
+                });
+            }
         }];
     }
 }
@@ -316,25 +325,34 @@ static void HandleMediaPlayerTrackChanged(void *opaque, libvlc_list_action_t act
                 case libvlc_list_action_added:
                 {
                     SEL selector = @selector(mediaPlayerTrackAdded:withType:);
-                    if([mediaPlayer.delegate respondsToSelector:selector])
-                        [mediaPlayer.delegate mediaPlayerTrackAdded:trackName
-                                                           withType:trackType];
+                    if([mediaPlayer.delegate respondsToSelector:selector]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [mediaPlayer.delegate mediaPlayerTrackAdded:trackName
+                                                               withType:trackType];
+                        });
+                    }
                 }
                     break;
                 case libvlc_list_action_updated:
                 {
                     SEL selector = @selector(mediaPlayerTrackUpdated:withType:);
-                    if([mediaPlayer.delegate respondsToSelector:selector])
-                        [mediaPlayer.delegate mediaPlayerTrackUpdated:trackName
-                                                             withType:trackType];
+                    if([mediaPlayer.delegate respondsToSelector:selector]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [mediaPlayer.delegate mediaPlayerTrackUpdated:trackName
+                                                                 withType:trackType];
+                        });
+                    }
                 }
                     break;
                 case libvlc_list_action_removed:
                 {
                     SEL selector = @selector(mediaPlayerTrackRemoved:withType:);
-                    if([mediaPlayer.delegate respondsToSelector:selector])
-                        [mediaPlayer.delegate mediaPlayerTrackRemoved:trackName
-                                                             withType:trackType];
+                    if([mediaPlayer.delegate respondsToSelector:selector]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [mediaPlayer.delegate mediaPlayerTrackRemoved:trackName
+                                                                 withType:trackType];
+                        });
+                    }
                 }
                     break;
                 default:
@@ -357,10 +375,13 @@ static void HandleMediaPlayerTrackSelectionChanged(void *opaque, libvlc_track_ty
 
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
             SEL selector = @selector(mediaPlayerTrackSelected:selectedId:unselectedId:);
-            if([mediaPlayer.delegate respondsToSelector:selector])
-                [mediaPlayer.delegate mediaPlayerTrackSelected:trackType
-                                                    selectedId:selectedId
-                                                  unselectedId:unselectedId];
+            if([mediaPlayer.delegate respondsToSelector:selector]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerTrackSelected:trackType
+                                                        selectedId:selectedId
+                                                      unselectedId:unselectedId];
+                });
+            }
         }];
     }
 }
@@ -461,8 +482,11 @@ static void HandleMediaTitleSelectionChanged(void *opaque,
             [mediaPlayer mediaPlayerTitleSelectionChanged: idx];
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerTitleSelectionChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerTitleSelectionChanged:)])
-                [mediaPlayer.delegate mediaPlayerTitleSelectionChanged: notification];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerTitleSelectionChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerTitleSelectionChanged: notification];
+                });
+            }
         }];
     }
 }
@@ -476,8 +500,11 @@ static void HandleMediaTitleListChanged(void * opaque)
             [mediaPlayer mediaPlayerTitleListChanged: VLCMediaPlayerTitleListChangedNotification];
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerTitleListChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerTitleListChanged:)])
-                [mediaPlayer.delegate mediaPlayerTitleListChanged: notification];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerTitleListChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerTitleListChanged: notification];
+                });
+            }
         }];
     }
 }
@@ -505,8 +532,11 @@ static void HandleMediaProgramListChanged(void *opaque, libvlc_list_action_t act
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerProgramListChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerProgramListChanged:)])
-                [mediaPlayer.delegate mediaPlayerProgramListChanged: notification];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerProgramListChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerProgramListChanged: notification];
+                });
+            }
         }];
     }
 }
@@ -520,8 +550,11 @@ static void HandleMediaProgramSelectionChanged(void *opaque, int unselected_grou
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerProgramSelectionChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerProgramSelectionChanged:)])
-                [mediaPlayer.delegate mediaPlayerProgramSelectionChanged: notification];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerProgramSelectionChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerProgramSelectionChanged: notification];
+                });
+            }
         }];
     }
 }
@@ -538,8 +571,11 @@ static void HandleMediaChapterChanged(void *opaque,
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
             NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerChapterChangedNotification object: mediaPlayer];
             [[NSNotificationCenter defaultCenter] postNotification: notification];
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerChapterChanged:)])
-                [mediaPlayer.delegate mediaPlayerChapterChanged: notification];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerChapterChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerChapterChanged: notification];
+                });
+            }
         }];
     }
 }
@@ -550,8 +586,11 @@ static void HandleMediaPlayerLengthChanged(void *opaque, libvlc_time_t length)
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
         [eventsHandler handleEvent:^(id _Nonnull object) {
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerLengthChanged:)])
-                [mediaPlayer.delegate mediaPlayerLengthChanged:length / 1000];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerLengthChanged:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayerLengthChanged:length / 1000];
+                });
+            }
         }];
     }
 }
@@ -567,8 +606,11 @@ static void HandleMediaPlayerSnapshot(void *opaque, const char *psz_filepath)
                 [mediaPlayer mediaPlayerSnapshot: fileName];
                 NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerSnapshotTakenNotification object: mediaPlayer];
                 [[NSNotificationCenter defaultCenter] postNotification: notification];
-                if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerSnapshot:)])
-                    [mediaPlayer.delegate mediaPlayerSnapshot: notification];
+                if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerSnapshot:)]) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [mediaPlayer.delegate mediaPlayerSnapshot: notification];
+                    });
+                }
             }
         }];
     }
@@ -583,12 +625,17 @@ static void HandleMediaPlayerRecord(void *opaque, bool recording,
         [eventsHandler handleEvent:^(id _Nonnull object) {
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
             if (recording) {
-                if ([mediaPlayer.delegate respondsToSelector: @selector(mediaPlayerStartedRecording:)])
-                    [mediaPlayer.delegate mediaPlayerStartedRecording: mediaPlayer];
+                if ([mediaPlayer.delegate respondsToSelector: @selector(mediaPlayerStartedRecording:)]) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [mediaPlayer.delegate mediaPlayerStartedRecording: mediaPlayer];
+                    });
+                }
             } else {
                 if ([mediaPlayer.delegate respondsToSelector: @selector(mediaPlayer:recordingStoppedAtURL:)]) {
-                    NSURL *url = [filePath hasPrefix: @"/"] ? [NSURL fileURLWithPath: filePath isDirectory: NO] : nil;
-                    [mediaPlayer.delegate mediaPlayer: mediaPlayer recordingStoppedAtURL: url];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSURL *url = [filePath hasPrefix: @"/"] ? [NSURL fileURLWithPath: filePath isDirectory: NO] : nil;
+                        [mediaPlayer.delegate mediaPlayer: mediaPlayer recordingStoppedAtURL: url];
+                    });
                 }
             }
         }];
@@ -615,8 +662,11 @@ static void HandleMediaPlayerNextFrameStatus(void *opaque, int status)
         VLCMediaPlayerFrameStepResult result = GetFrameStepResult(status);
         [eventsHandler handleEvent:^(id _Nonnull object) {
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayer:nextFrameSteppedWithResult:)])
-                [mediaPlayer.delegate mediaPlayer:mediaPlayer nextFrameSteppedWithResult:result];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayer:nextFrameSteppedWithResult:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayer:mediaPlayer nextFrameSteppedWithResult:result];
+                });
+            }
         }];
     }
 }
@@ -628,8 +678,11 @@ static void HandleMediaPlayerPreviousFrameStatus(void *opaque, int status)
         VLCMediaPlayerFrameStepResult result = GetFrameStepResult(status);
         [eventsHandler handleEvent:^(id _Nonnull object) {
             VLCMediaPlayer *mediaPlayer = (VLCMediaPlayer *)object;
-            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayer:previousFrameSteppedWithResult:)])
-                [mediaPlayer.delegate mediaPlayer:mediaPlayer previousFrameSteppedWithResult:result];
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayer:previousFrameSteppedWithResult:)]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [mediaPlayer.delegate mediaPlayer:mediaPlayer previousFrameSteppedWithResult:result];
+                });
+            }
         }];
     }
 }
@@ -1494,8 +1547,11 @@ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
 
     NSNotification *notification = [NSNotification notificationWithName: VLCMediaPlayerTimeChangedNotification object: self];
     [[NSNotificationCenter defaultCenter] postNotification: notification];
-    if ([self.delegate respondsToSelector:@selector(mediaPlayerTimeChanged:)])
-        [self.delegate mediaPlayerTimeChanged: notification];
+    if ([self.delegate respondsToSelector:@selector(mediaPlayerTimeChanged:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.delegate mediaPlayerTimeChanged: notification];
+        });
+    }
 
     [self willChangeValueForKey:@"position"];
     [self didChangeValueForKey:@"position"];

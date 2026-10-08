@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 * Transcoder delegate allows to be notified about transcoding state
 */
 @class VLCTranscoder;
+NS_SWIFT_UI_ACTOR
 @protocol VLCTranscoderDelegate <NSObject>
 
 @optional

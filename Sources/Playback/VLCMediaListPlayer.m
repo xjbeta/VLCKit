@@ -217,14 +217,18 @@
 - (void)mediaListPlayerNextItemSet:(VLCMedia *)media
 {
     if ([_delegate respondsToSelector:@selector(mediaListPlayer:nextMedia:)]) {
-        [_delegate mediaListPlayer:self nextMedia:media];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaListPlayer:self nextMedia:media];
+        });
     }
 }
 
 - (void)mediaListPlayerStopped
 {
     if ([_delegate respondsToSelector:@selector(mediaListPlayerStopped:)]) {
-        [_delegate mediaListPlayerStopped:self];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaListPlayerStopped:self];
+        });
     }
 }
 

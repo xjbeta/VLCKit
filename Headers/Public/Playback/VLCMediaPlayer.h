@@ -116,6 +116,7 @@ NSString * VLCMediaPlayerStateToString(VLCMediaPlayerState state);
  * Formal protocol declaration for playback delegates.  Allows playback messages
  * to be trapped by delegated objects.
  */
+NS_SWIFT_UI_ACTOR
 @protocol VLCMediaPlayerDelegate <NSObject>
 
 @optional

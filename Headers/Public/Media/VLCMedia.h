@@ -48,6 +48,7 @@ FOUNDATION_EXPORT NSNotificationName const VLCMediaArtworkChangedNotification NS
  * Informal protocol declaration for VLCMedia delegates.  Allows data changes to be
  * trapped.
  */
+NS_SWIFT_UI_ACTOR
 @protocol VLCMediaDelegate <NSObject>
 
 @optional

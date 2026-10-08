@@ -269,16 +269,22 @@ void close_cb(void *opaque) {
         libvlc_media_list_release( p_mlist );
     }
 
-    if ([_delegate respondsToSelector:@selector(mediaDidFinishParsing:)])
-        [_delegate mediaDidFinishParsing:self];
+    if ([_delegate respondsToSelector:@selector(mediaDidFinishParsing:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaDidFinishParsing:self];
+        });
+    }
 }
 
 - (void)metaChanged
 {
     [self.metaData clearCache];
 
-    if ([_delegate respondsToSelector:@selector(mediaMetaDataDidChange:)])
-        [_delegate mediaMetaDataDidChange:self];
+    if ([_delegate respondsToSelector:@selector(mediaMetaDataDidChange:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaMetaDataDidChange:self];
+        });
+    }
 
     NSNotification *notification = [NSNotification notificationWithName:VLCMediaMetaChangedNotification object:self];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
@@ -292,8 +298,11 @@ void close_cb(void *opaque) {
         libvlc_media_list_release(p_mlist);
     }
 
-    if ([_delegate respondsToSelector:@selector(mediaDidChangeSubitems:)])
-        [_delegate mediaDidChangeSubitems:self];
+    if ([_delegate respondsToSelector:@selector(mediaDidChangeSubitems:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaDidChangeSubitems:self];
+        });
+    }
 
     NSNotification *notification = [NSNotification notificationWithName:VLCMediaSubitemsChangedNotification object:self];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
@@ -304,8 +313,11 @@ void close_cb(void *opaque) {
     if (![self.metaData setArtworkWithData:imageData])
         return;
 
-    if ([_delegate respondsToSelector:@selector(mediaDidChangeArtwork:)])
-        [_delegate mediaDidChangeArtwork:self];
+    if ([_delegate respondsToSelector:@selector(mediaDidChangeArtwork:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate mediaDidChangeArtwork:self];
+        });
+    }
 
     NSNotification *notification = [NSNotification notificationWithName:VLCMediaArtworkChangedNotification object:self];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
