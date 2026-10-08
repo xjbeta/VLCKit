@@ -1,0 +1,120 @@
+name: Build VLCKit (macOS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level (debug/trace/verbose enables verbose build output)"
+        required: true
+        default: "warning"
+  push:
+    branches:
+      - build-4.0
+  pull_request:
+    branches:
+      - build-4.0
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JOB_NAME: VLCKit-macOS
+  VLC_VERSION: "4.0"
+
+jobs:
+  build-macos:
+    name: Build macOS VLCKit
+    runs-on: macos-26
+    # libvlc/contrib compilation is very slow (hours on a cold cache).
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        shell: zsh {0}
+        run: |
+          XCODE="$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)"
+          if [ -n "$XCODE" ]; then
+            sudo xcode-select -s "$XCODE"
+          fi
+          xcodebuild -version
+
+      - name: Resolve libvlc revision
+        id: vlc
+        shell: zsh {0}
+        run: |
+          HASH="$(sed -n 's/^TESTEDHASH="\([^"]*\)".*/\1/p' compileAndBuildVLCKit.sh | head -1)"
+          echo "hash=${HASH:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "libvlc revision: ${HASH:-unknown}"
+
+      # VLC/libvlc compilation is the slow part. Cache the VLC checkout
+      # (source + contrib + per-arch build dirs), keyed by the pinned libvlc
+      # revision so a version bump invalidates it. The key is intentionally
+      # broad (no build-script hash) so it keeps hitting across small tweaks.
+      - name: Cache VLC/libvlc build
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: libvlc/vlc
+          key: ${{ runner.os }}-vlc-${{ steps.vlc.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-vlc-
+
+      # The VLC build uses the system GNU make (Apple's is 3.81), whose
+      # pipe-based jobserver is unsupported by ninja >= 1.13, so the build dies
+      # with "Could not initialize jobserver: Invalid file descriptors".
+      # Force GNU make 4.4+ (FIFO jobserver) via VLC_PATH, which the build
+      # script prepends to PATH before /usr/bin.
+      - name: Use GNU make 4.4 (FIFO jobserver for ninja)
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          brew install make
+          GNUBIN="$(brew --prefix make)/libexec/gnubin"
+          mkdir -p "$RUNNER_TEMP/vlc-tools"
+          ln -sf "$GNUBIN/make" "$RUNNER_TEMP/vlc-tools/make"
+          echo "VLC_PATH=$RUNNER_TEMP/vlc-tools" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/vlc-tools/make" --version | head -1
+
+      - name: Build VLCKit for macOS
+        shell: zsh {0}
+        env:
+          LOG_LEVEL: ${{ github.event.inputs.logLevel || 'warning' }}
+        run: |
+          set -euo pipefail
+          VERBOSE=""
+          case "$LOG_LEVEL" in
+            debug|trace|verbose) VERBOSE="-v" ;;
+          esac
+          ./compileAndBuildVLCKit.sh -x $VERBOSE
+
+      - name: Package VLCKit for macOS
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          ./Packaging/create-distributable-package.sh -x -z
+          ZIP="$(ls VLCKit-macOS-*.zip | head -1)"
+          mv "$ZIP" "${JOB_NAME}-${VLC_VERSION}-$(date +%Y%m%d-%H%M).zip"
+
+      - name: Upload VLCKit macOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.JOB_NAME }}-${{ env.VLC_VERSION }}
+          path: ${{ env.JOB_NAME }}-${{ env.VLC_VERSION }}-*.zip
+          if-no-files-found: error
+
+      # Save the (partial) VLC build even if the build failed, so a failed run
+      # does not force a full rebuild next time.
+      - name: Save VLC/libvlc build (even on failure)
+        if: always() && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: libvlc/vlc
+          key: ${{ runner.os }}-vlc-${{ steps.vlc.outputs.hash }}

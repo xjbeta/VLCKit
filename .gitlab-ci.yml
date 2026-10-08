@@ -1,4 +1,5 @@
 stages:
+    - release
     - build
 
 variables:
@@ -11,10 +12,13 @@ variables:
 
 .continous-job-base-main:
     tags:
-        - macos-xcode26
+        - m4mini-ci1
+        - m4mini-ci2
     stage: build
-    only:
-        - merge_requests
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "build-4.0"'
+          when: manual
+        - when: never
     interruptible: true
 
 .continous-build-base-main:
@@ -25,21 +29,6 @@ variables:
         - rm -rf libvlc/vlc || true
         - rm -rf *-binary || true
 
-continous-VLCKit-iOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vf"
-        JOB_NAME: "MobileVLCKit"
-
-continous-VLCKit-tvOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vft"
-        JOB_NAME: "TVVLCKit"
 
 continous-VLCKit-macOS-main:
     extends:
@@ -49,51 +38,76 @@ continous-VLCKit-macOS-main:
         BUILD_PARAM: "vx"
         JOB_NAME: "VLCKit"
 
-continous-VLCKit-xrOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vfi"
-        JOB_NAME: "VLCKit-watchOS"
-
-continous-VLCKit-watchOS-main:
-    extends:
-        - .continous-job-base-main
-        - .continous-build-base-main
-    variables:
-        BUILD_PARAM: "vfw"
-        JOB_NAME: "VLCKit-watchOS"
 
 ############################################################
-## Dev artifacts & release builds                         ##
-## Compile all 5 platforms, then create a single package  ##
+## Development artifacts builds                           ##
+## These are running every time a merge request is merged ##
+## or a commit gets pushed to the default branch          ##
 ############################################################
 
-dev-artifacts-VLCKit:
+.dev-artifacts-job-base-main:
     tags:
-        - macos-xcode26
-    stage: build
+        - m4mini-ci1
+        - m4mini-ci2
     rules:
-        - if: '$CI_PIPELINE_SOURCE == "push" && $CI_PROJECT_PATH == "videolan/VLCKit"'
+        - if: '$CI_COMMIT_BRANCH == "build-4.0"'
+          when: manual
+        - when: never
+
     artifacts:
         paths:
-            - ./*.zip
+            - ./*.tar.xz
+    stage: build
+
+.dev-artifacts-build-base-main:
     script:
-        - ./compileAndBuildVLCKit.sh -f
-        - rm -rf libvlc/vlc || true
-        - ./compileAndBuildVLCKit.sh -ft
-        - rm -rf libvlc/vlc || true
-        - ./compileAndBuildVLCKit.sh -xf
-        - rm -rf libvlc/vlc || true
-        - ./compileAndBuildVLCKit.sh -fi
-        - rm -rf libvlc/vlc || true
-        - ./compileAndBuildVLCKit.sh -fw
-        - ./Packaging/create-distributable-package.sh -a -x -m -t -i -w -s
-        - mv *.zip VLCKit-${VLC_VERSION}-`date +%Y%m%d-%H%M`.zip
-        - rm -rf build/ || true
-        - rm -rf libvlc/vlc || true
+        - ./compileAndBuildVLCKit.sh -${BUILD_PARAM}
+        - ./Packaging/create-distributable-package.sh -${PACKAGING_PARAM}
+        - mv *.tar.xz ${JOB_NAME}-${VLC_VERSION}-`date +%Y%m%d-%H%M`.tar.xz
     after_script:
         - rm -rf build/ || true
         - rm -rf libvlc/vlc || true
         - rm -rf *-binary || true
+
+
+dev-artifacts-VLCKit-macOS-main:
+    extends:
+        - .dev-artifacts-job-base-main
+        - .dev-artifacts-build-base-main
+    variables:
+        BUILD_PARAM: "x"
+        PACKAGING_PARAM: "x"
+        JOB_NAME: "VLCKit-macOS"
+
+
+####################
+## Release builds ##
+####################
+
+.release-job-base-main:
+    tags:
+        - m4mini-ci1
+        - m4mini-ci2
+    stage: release
+    only:
+        - tags
+    artifacts:
+        paths:
+            - ./*.tar.xz
+
+.release-build-base-main:
+    script:
+        - cd Packaging
+        - ./buildAndDeployFrameworks.sh -${BUILD_PARAM}
+    after_script:
+        - rm -rf build/ || true
+        - rm -rf libvlc/vlc || true
+        - rm -rf *-binary || true
+
+
+VLCKit-main:
+    extends:
+        - .release-job-base-main
+        - .release-build-base-main
+    variables:
+        BUILD_PARAM: "x"

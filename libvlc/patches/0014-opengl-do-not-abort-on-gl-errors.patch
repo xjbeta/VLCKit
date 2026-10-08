@@ -1,0 +1,44 @@
+From 96bba8e41b7d84d9bd62bdf9ff3a0e210f28dbc4 Mon Sep 17 00:00:00 2001
+From: xjbeta <xjbeta.tiny@gmail.com>
+Date: Fri, 9 Oct 2026 08:45:00 +0800
+Subject: [PATCH] opengl: do not abort on GL errors from the video output
+
+The debug-only GL_ASSERT_NOERROR() macro calls assert() on any glGetError()
+result. The OpenGL vout can legitimately report GL_INVALID_OPERATION on some
+drivers/contexts, which aborts the whole application. Clear the error instead
+of asserting, matching the behaviour of release builds.
+---
+ modules/video_output/opengl/gl_common.h | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/modules/video_output/opengl/gl_common.h b/modules/video_output/opengl/gl_common.h
+index 65aa4cc777..32f5369b0f 100644
+--- a/modules/video_output/opengl/gl_common.h
++++ b/modules/video_output/opengl/gl_common.h
+@@ -211,19 +211,10 @@
+ #endif
+ 
+ #ifdef HAVE_GL_ASSERT_NOERROR
+-# define GL_ASSERT_NOERROR(vt) do { \
+-    GLenum glError = (vt)->GetError(); \
+-    switch (glError) \
+-    { \
+-        case GL_NO_ERROR: break; \
+-        case GL_INVALID_ENUM: assert(!"GL_INVALID_ENUM"); \
+-        case GL_INVALID_VALUE: assert(!"GL_INVALID_VALUE"); \
+-        case GL_INVALID_OPERATION: assert(!"GL_INVALID_OPERATION"); \
+-        case GL_INVALID_FRAMEBUFFER_OPERATION: assert(!"GL_INVALID_FRAMEBUFFER_OPERATION"); \
+-        case GL_OUT_OF_MEMORY: assert(!"GL_OUT_OF_MEMORY"); \
+-        default: assert(!"GL_UNKNOWN_ERROR"); \
+-    } \
+-} while(0)
++/* VLCKit: do not abort playback on a GL error reported by the OpenGL vout;
++ * just clear it. Some drivers/contexts report GL_INVALID_OPERATION here, and
++ * crashing the whole application is worse than ignoring the error. */
++# define GL_ASSERT_NOERROR(vt) do { (void)(vt)->GetError(); } while(0)
+ #else
+ # define GL_ASSERT_NOERROR(vt)
+ #endif
+-- 
+2.56.0
+

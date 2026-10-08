@@ -1,0 +1,50 @@
+From ee32e70078a29bf395ad286bdee60d451cf7479f Mon Sep 17 00:00:00 2001
+From: xjbeta <xjbeta.tiny@gmail.com>
+Date: Fri, 9 Oct 2026 05:08:42 +0800
+Subject: [PATCH] contrib: librist: fetch from git instead of the GitLab
+ archive
+
+The code.videolan.org archive endpoint is now behind an Anubis anti-bot
+challenge, and GitLab regenerates archives with unstable checksums, so the
+pinned SHA512 can no longer be downloaded by the build. Fetch the pinned
+commit over git instead (download_git/check_githash), which is stable and
+not challenged.
+---
+ contrib/src/librist/rules.mak | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/contrib/src/librist/rules.mak b/contrib/src/librist/rules.mak
+index 154e5b6ab0..be37850ee0 100644
+--- a/contrib/src/librist/rules.mak
++++ b/contrib/src/librist/rules.mak
+@@ -1,7 +1,8 @@
+ # librist
+ 
+ LIBRIST_VERSION := v0.2.20
+-LIBRIST_URL := $(VIDEOLAN_GIT)/rist/librist/-/archive/$(LIBRIST_VERSION)/librist-$(LIBRIST_VERSION).tar.gz
++LIBRIST_GITURL := $(VIDEOLAN_GIT)/rist/librist.git
++LIBRIST_HASH := 4f45ef8f78983892d52ccd52d9f675435b23738f
+ 
+ ifdef BUILD_NETWORK
+ PKGS += librist
+@@ -40,12 +41,13 @@ DEPS_librist += gnutls $(DEPS_gnutls)
+ LIBRIST_CONF += -Duse_nettle=true -Duse_mbedtls=false
+ endif
+ 
+-$(TARBALLS)/librist-$(LIBRIST_VERSION).tar.gz:
+-	$(call download_pkg,$(LIBRIST_URL),librist)
++$(TARBALLS)/librist-$(LIBRIST_VERSION).tar.xz:
++	$(call download_git,$(LIBRIST_GITURL),$(LIBRIST_VERSION),$(LIBRIST_HASH))
+ 
+-.sum-librist: librist-$(LIBRIST_VERSION).tar.gz
++.sum-librist: librist-$(LIBRIST_VERSION).tar.xz
++	$(call check_githash,$(LIBRIST_HASH))
+ 
+-librist: librist-$(LIBRIST_VERSION).tar.gz .sum-librist
++librist: librist-$(LIBRIST_VERSION).tar.xz .sum-librist
+ 	$(UNPACK)
+ 	$(APPLY) $(SRC)/librist/0001-crypto-use-bcrypt-on-Windows-to-generate-random-numb.patch
+ 	$(MOVE)
+-- 
+2.56.0
+
